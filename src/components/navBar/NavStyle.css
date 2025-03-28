@@ -1,0 +1,21 @@
+.nav{
+    display: flex;
+    background-color: aliceblue !important;
+    
+}
+.nav-container {
+    max-width: 1200px; /* Equivalent to Tailwind's container */
+    margin: 0 auto; /* Centers the navbar */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem; /* Equivalent to p-4 */
+  }
+
+.tittle{
+    font-size: 44px;
+}
+
+/* .logo-img { /* Adjust size */
+    /* width: auto;
+  } */ 
