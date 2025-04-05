@@ -1,7 +1,7 @@
-import logo from "../../photos/browse-svgrepo-com.svg";
+import logo from "../../../public/Photos/browse-svgrepo-com.svg";
 
 const Logo = () => {
-  return <img src={logo} alt="Logo" width="50" height="50" />;
+  return <img src={logo} alt="Logo" className="w-11 h-11 md:w-12 md:h-12"/>;
 };
 
 export default Logo;

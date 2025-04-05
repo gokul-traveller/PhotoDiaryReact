@@ -1,6 +1,6 @@
 export interface Photo {
   id: string;
-  url: string;
+  imageData: string;
   isLocked: boolean;
   ownerId: string;
   innerPhotos: Photo[];
@@ -114,21 +114,33 @@ export const fetchPublicPhotos = async () => {
     credentials: "include",
   });
 
-  if (!response.ok) throw new Error("Failed to fetch public photos");
-
+  if (!response.ok){
+    console.log("error loading photos");
+    throw new Error("Failed to fetch public photos");
+  } 
+  console.log(response)
   return response.json();
 };
 
 
-export const fetchAllPhotos = async () => {
-  const response = await fetch("/api/photos", {
+export const fetchAllUsers = async () => {
+  try {
+  const response = await fetch("http://localhost:8080/api/photos", {
     method: "GET",
     credentials: "include",
   });
-
+  console.log("data is not called");
   if (!response.ok) {
+    console.log("error loading photos");
     throw new Error("Failed to fetch photos");
   }
-
-  return response.json();
+  console.log("data is about to be called");
+  const data = await response.json(); 
+  // console.log("Data is " + JSON.stringify(data, null, 2));
+  return data;
+}
+  catch (error) {
+    console.log("error loading photos");
+    throw new Error("Failed to fetch photos");
+  }
 };

@@ -10,10 +10,10 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/profile/:userId" element={<Profile />} />
       
       {/* Protected Routes (Only accessible when logged in) */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/photo/:photoId" element={<PhotoDetails />} />
       </Route>
     </Routes>

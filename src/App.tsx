@@ -5,7 +5,7 @@ const App = () => {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto p-4">
+      <div className="mx-auto pt-12 overflow-hidden select-none">
         <AppRoutes />
       </div>
     </>

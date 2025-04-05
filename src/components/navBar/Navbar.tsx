@@ -7,24 +7,24 @@ const Navbar = () => {
   const { user, logout } = useAuthStore();
 
   return (
-    <nav className="fixed top-0 w-full bg-rose-400 shadow-md">
+    <nav className="fixed top-0 w-full bg-gray-500 shadow-md select-none z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-georgia text-gray-800 flex items-center ml-3">
+        <Link to="/" className="text-1xl md:text-2xl font-georgia text-white flex items-center ml-3">
           <Logo />
           <span className="ml-2">PhotoDiary</span>
         </Link>
-        <div className="space-x-8 mr-4">
-          <Link to={`/`} className="text-gray-700 hover:underline">
+        <div className="space-x-2 mr-2 md:space-x-8  text-sm md:text-base">
+          <Link to={`/`} className="text-white hover:underline">
             About
           </Link>
-          <Link to={`/`} className="text-gray-700 hover:underline">
+          <Link to={`/`} className="text-white hover:underline">
             Home
           </Link>
           {user ? (
             <>
               <Link
                 to={`/profile/${user.id}`}
-                className="text-gray-700 hover:underline"
+                className="text-white hover:underline"
               >
                 My Profile
               </Link>
