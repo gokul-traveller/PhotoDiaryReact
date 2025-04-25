@@ -24,7 +24,11 @@ const Home = () => {
   return (
     <div className="mx-auto px-4 md:px-10 py-4">
       <SearchBar />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">  
+      <div className="grid gap-6 justify-center"
+     style={{
+       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+     }}
+>
         {users?.map((user: User) => {
           console.log(`User: ${user.userName}, isLocked: ${user.locked}`); // Log inside map()
           return (
@@ -40,7 +44,7 @@ const Home = () => {
             }}
           >
             <img 
-              src={`data:image/jpeg;base64,${user.imageData}`}  
+              src={`${user.imageData}`}  
               alt="User" 
               className="w-48 h-48 rounded-full object-cover border-4 border-stone-300 shadow-md"
             />

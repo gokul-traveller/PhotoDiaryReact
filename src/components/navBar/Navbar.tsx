@@ -7,8 +7,8 @@ const Navbar = () => {
   const { user, logout } = useAuthStore();
 
   return (
-    <nav className="fixed top-0 w-full bg-gray-500 shadow-md select-none z-50">
-      <div className="container mx-auto flex justify-between items-center">
+<nav className="fixed top-0 w-full bg-gray-500 shadow-md select-none z-50 h-12 md:h-12">
+      <div className="flex justify-between items-center w-full px-4">
         <Link to="/" className="text-1xl md:text-2xl font-georgia text-white flex items-center ml-3">
           <Logo />
           <span className="ml-2">PhotoDiary</span>

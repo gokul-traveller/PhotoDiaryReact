@@ -1,80 +1,119 @@
+import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
-import { useAuthStore } from "../context/authStore";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchUserProfile, uploadPhoto, deletePhoto } from "../api/photoApi";
+import wrong from "/src/assets/wrong.svg";
 import PhotoCard from "../components/PhotoCard";
+import Logo from "../components/navBar/Logo";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserCategories, uploadCategory, deletePhoto } from "../api/photoApi";
 
 interface Photo {
-    id: string; // Change from number to string
-    url: string;
-    isLocked: boolean;
-  }
-  
-  
+  id: number;
+  name: string;
+  imageData: string; // from backend
+  locked: boolean;
+}
 
-const Profile = () => {
-  const { userId } = useParams();
-  const { user } = useAuthStore();
-  const queryClient = useQueryClient();
+const Profile: React.FC = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const parsedPhotoId = parseInt(userId || "0", 10);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch user profile
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: userId ? ["profile", userId] : ["profile", "unknown"], // Ensures queryKey is always valid
-    queryFn: () => fetchUserProfile(userId!), // Safe because of `enabled`
-    enabled: !!userId, // Prevents query execution if userId is undefined
+  const { data: category, isLoading, error, refetch } = useQuery({
+    queryKey: ["category", parsedPhotoId],
+    queryFn: () => fetchUserCategories(parsedPhotoId),
+    enabled: !!parsedPhotoId,
   });
 
-  // Upload Photo Mutation
-  const uploadMutation = useMutation({
-    mutationFn: uploadPhoto,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
-  });
-
-  // Delete Photo Mutation
-  const deleteMutation = useMutation({
-    mutationFn: deletePhoto,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
-  });
-
-  if (isLoading) return <p>Loading profile...</p>;
-  if (error) return <p>Error loading profile.</p>;
+  const triggerFileSelect = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0] && userId) {
-      const file = event.target.files[0];
-      await uploadMutation.mutateAsync({ userId, file });
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await uploadCategory(file);
+      console.log("Image uploaded from component!");
+      refetch();
+    } catch (err) {
+      console.error("Upload failed in component:", err);
     }
   };
 
   const handleDelete = async (photoId: number) => {
-    if (userId) {
-        await deleteMutation.mutateAsync(photoId.toString());
+    try {
+      await deletePhoto(photoId);
+      console.log("Image deleted:", photoId);
+      refetch();
+    } catch (err) {
+      console.error("Delete failed:", err);
     }
   };
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">{profile?.name}'s Profile</h1>
-      {user?.id === userId && (
-        <div className="mb-4">
-          <input type="file" onChange={handleUpload} />
-        </div>
-      )}
+  if (isLoading) {
+    return <p className="text-center text-gray-600">Loading photos...</p>;
+  }
 
-      <div className="grid grid-cols-3 gap-4">
-      {(profile?.photos ?? []).map((photo: Photo) => (
-        <div key={photo.id}>
-            <PhotoCard photo={{ ...photo, id: String(photo.id) }} /> 
-            {user?.id === userId && (
-            <button
-                onClick={() => handleDelete(Number(photo.id))} 
-                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg"
-            >
-                Delete
-            </button>
-            )}
-        </div>
-        ))}
+  if (error) {
+    return <p className="text-center text-red-500">Error loading photos.</p>;
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center w-full px-4 py-1 bg-slate-800">
+        <Link to="/" className="text-1xl md:text-2xl font-georgia text-white flex items-center ml-3">
+          <Logo />
+          <span className="ml-2">{category?.[0]?.name || "Loading..."}</span>
+        </Link>
+        <button
+          onClick={triggerFileSelect}
+          className="px-6 py-1 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700"
+        >
+          Edit
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-2 w-full px-4 py-2">
+        {category?.length === 0 ? (
+          <p className="text-center text-gray-500">No photos uploaded yet.</p>
+        ) : (
+          category.map((photo) => (
+            <div key={photo.id} className="relative w-full">
+              <PhotoCard
+                photo={{
+                  id: photo.id,
+                  url: photo.imageData,
+                  isLocked: photo.locked,
+                }}
+              />
+              <button
+                onClick={() => handleDelete(photo.id)}
+                className="absolute top-2 right-2 p-1 rounded-full hover:bg-white shadow-lg"
+                title="Delete"
+              >
+                <img src={wrong} alt="Delete" className="w-4 h-4" />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Add Photo Button at the Bottom */}
+      <div className="mt-2 w-full flex justify-center">
+        <button
+          onClick={triggerFileSelect}
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700"
+        >
+          Add Photo
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleUpload}
+          className="hidden"
+        />
       </div>
     </div>
   );

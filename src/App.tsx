@@ -5,7 +5,8 @@ const App = () => {
   return (
     <>
       <Navbar />
-      <div className="mx-auto pt-12 overflow-hidden select-none">
+      <div className="h-12 md:h-12" /> 
+      <div className="mx-auto overflow-hidden select-none">
         <AppRoutes />
       </div>
     </>
