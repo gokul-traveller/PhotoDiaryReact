@@ -159,7 +159,7 @@ export const deletePhoto = async (photoId: number) => {
   }
 };
 
-export const fetchUserPhotos = async (category: number | undefined) => {
+export const fetchUserPhotos = async (category: string | undefined) => {
   try {
   const response = await fetch(`http://localhost:8080/api/photo/${category}`, {
     method: "GET",

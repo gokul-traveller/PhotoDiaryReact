@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../context/authStore";
 import PhotoCard from "../components/PhotoCard";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserPhotos } from "../api/photoApi";
 
 interface Photo {
-  id: number;
-  url: string;
+  photoId: number;
+  imageData: string;
   isLocked: boolean;
 }
 
@@ -40,6 +42,7 @@ const PhotoDetails = () => {
   const [profiles, setProfiles] = useState(initialDummyProfiles); // store all profiles
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
+  const { photoId } = useParams<{ photoId: string }>();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -50,6 +53,11 @@ const PhotoDetails = () => {
     photos: [],
   });
   }, []);
+  const { data: photoss, isLoading, error, refetch } = useQuery({
+    queryKey: ["photoss", photoId],
+    queryFn: () => fetchUserPhotos(photoId),
+    enabled: !!photoId,
+  });
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (fullscreenIndex === null) return;
@@ -98,8 +106,8 @@ const PhotoDetails = () => {
     const reader = new FileReader();
     reader.onloadend = () => {
       const newPhoto: Photo = {
-        id:id.current += 1,
-        url: reader.result as string,
+        photoId:id.current += 1,
+        imageData: reader.result as string,
         isLocked: false,
       };
 
@@ -123,7 +131,7 @@ const PhotoDetails = () => {
 
     const updatedProfile = {
       ...profile,
-      photos: profile.photos.filter((p) => p.id !== photoId),
+      photos: profile.photos.filter((p) => p.photoId !== photoId),
     };
 
     setProfile(updatedProfile);
@@ -133,7 +141,8 @@ const PhotoDetails = () => {
     }));
   };
 
-  if (loading) return <p className="text-center">Loading profile...</p>;
+  if (isLoading) return <p className="text-center">Loading profile...</p>;
+  if (!photoss) return <p className="text-center text-red-500">Profile not found.</p>;
   if (!profile) return <p className="text-center text-red-500">Profile not found.</p>;
 
   return (
@@ -141,20 +150,26 @@ const PhotoDetails = () => {
       <h1 className="text-2xl font-bold mb-4">{profile.name} Profile</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {profile.photos.length === 0 ? (
+        {(!photoss || photoss.photos)  ? (
           <p className="text-gray-500 col-span-full text-center">
             No photos uploaded yet.
           </p>
         ) : (
-          profile.photos.map((photo, index) => (
-            <div key={photo.id}>
-              <div onClick={() => setFullscreenIndex(index)}>
-                <PhotoCard photo={photo} />
+          photoss[0].photos.map((photo : Photo) => (
+            <div key={photo.photoId}>
+              <div onClick={() => setFullscreenIndex(photo.photoId)}>
+              <PhotoCard
+        photo={{
+          id: photo.photoId,  // use photo.photoId
+          url: photo.imageData,  // use photo.imageData
+          isLocked: photo.isLocked,  // use photo.locked
+        }}
+      />
               </div>
 
               {user?.id === profile.id && (
                 <button
-                  onClick={() => handleDelete(photo.id)}
+                  onClick={() => handleDelete(photo.photoId)}
                   className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
                 >
                   Delete
@@ -201,7 +216,7 @@ const PhotoDetails = () => {
 
     {/* Image */}
     <img
-      src={profile.photos[fullscreenIndex].url}
+      src={profile.photos[fullscreenIndex].imageData}
       alt="Fullscreen"
       className="max-h-[90vh] max-w-[90vw] rounded-xl shadow-2xl transition-transform duration-300 hover:scale-105 object-contain"
     />
