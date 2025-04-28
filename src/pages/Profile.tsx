@@ -75,11 +75,11 @@ const Profile: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-col gap-2 w-full px-4 py-2">
+      <div className="flex flex-col gap-2 w-full py-2">
         {category?.length === 0 ? (
           <p className="text-center text-gray-500">No photos uploaded yet.</p>
         ) : (
-          category.map((photo) => (
+          category.map((photo : Photo) => (
             <div key={photo.id} className="relative w-full">
               <PhotoCard
                 photo={{

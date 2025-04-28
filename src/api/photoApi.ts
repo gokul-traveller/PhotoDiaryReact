@@ -147,7 +147,7 @@ export const uploadCategory = async(file: File): Promise<void> => {
 };
 
 // Delete a photo
-export const deletePhoto = async (photoId: string) => {
+export const deletePhoto = async (photoId: number) => {
   try {
     const response = await axios.delete(`http://localhost:8080/api/photo/${photoId}`, {
       withCredentials: true, // same as `credentials: "include"` in fetch
