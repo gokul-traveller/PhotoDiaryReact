@@ -9,6 +9,7 @@ import { fetchUserCategories, uploadCategory, deletePhoto } from "../api/photoAp
 
 interface Photo {
   id: number;
+  publicId: string;
   name: string;
   imageData: string; // from backend
   locked: boolean;
@@ -42,10 +43,10 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleDelete = async (photoId: number) => {
+  const handleDelete = async (publicId: string) => {
     try {
-      await deletePhoto(photoId);
-      console.log("Image deleted:", photoId);
+      await deletePhoto(publicId);
+      console.log("Image deleted:", publicId);
       refetch();
     } catch (err) {
       console.error("Delete failed:", err);
@@ -79,17 +80,17 @@ const Profile: React.FC = () => {
         {category?.length === 0 ? (
           <p className="text-center text-gray-500">No photos uploaded yet.</p>
         ) : (
-          category.map((photo : Photo) => (
-            <div key={photo.id} className="relative w-full">
+          category.map((photos : Photo) => (
+            <div key={photos.id} className="relative w-full">
               <PhotoCard
                 photo={{
-                  id: photo.id,
-                  url: photo.imageData,
-                  isLocked: photo.locked,
+                  id: photos.id,
+                  url: photos.imageData,
+                  isLocked: photos.locked,
                 }}
               />
               <button
-                onClick={() => handleDelete(photo.id)}
+                onClick={() => handleDelete(photos.publicId)}
                 className="absolute top-2 right-2 p-1 rounded-full hover:bg-white shadow-lg"
                 title="Delete"
               >

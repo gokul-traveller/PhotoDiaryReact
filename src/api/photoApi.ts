@@ -22,23 +22,7 @@ export const fetchUserProfile = async (userId: string | undefined) => {
   return response.json();
 };
 
-// Upload an inner photo inside a locked/unlocked outer photo
-export const uploadInnerPhoto = async ({ photoId, file }: { photoId: string | undefined; file: File }) => {
-  if (!photoId) throw new Error("Photo ID is required");
 
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch(`/api/photos/${photoId}/inner`, {
-    method: "POST",
-    body: formData,
-    credentials: "include",
-  });
-
-  if (!response.ok) throw new Error("Failed to upload inner photo");
-
-  return response.json();
-};
 
 // Lock or unlock a photo
 export const toggleLockPhoto = async (photoId: string) => {
@@ -147,9 +131,9 @@ export const uploadCategory = async(file: File): Promise<void> => {
 };
 
 // Delete a photo
-export const deletePhoto = async (photoId: number) => {
+export const deletePhoto = async (publicId: string) => {
   try {
-    const response = await axios.delete(`http://localhost:8080/api/photo/${photoId}`, {
+    const response = await axios.delete(`http://localhost:8080/api/photo/${publicId}`, {
       withCredentials: true, // same as `credentials: "include"` in fetch
     });
     console.log("Detele successful:", response.data);
@@ -165,6 +149,7 @@ export const fetchUserPhotos = async (category: string | undefined) => {
     method: "GET",
     credentials: "include",
   });
+  console.log("category is "+category);
   if (!response.ok) {
     console.log("error loading photos");
     throw new Error("Failed to fetch photos");
@@ -176,5 +161,37 @@ export const fetchUserPhotos = async (category: string | undefined) => {
   catch (error) {
     console.log("error loading photos");
     throw new Error("Failed to fetch photos");
+  }
+};
+
+// Upload an inner photo inside a locked/unlocked outer photo
+export const uploadInnerPhoto = async(photoId: string,file: File): Promise<void> => {
+  console.log("in uploadInnerPhoto api call");
+  const formData = new FormData();
+  formData.append("image", file); // 'image' should match your backend's expected field
+
+  try {
+    const response = await axios.post(`http://localhost:8080/api/${photoId}/uploadInnerPhoto`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("Upload successful:", response.data);
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error; // you can handle it wherever this method is called
+  }
+};
+
+// Delete a photo
+export const deleteInnerPhoto = async (publicId: string) => {
+  try {
+    const response = await axios.delete(`http://localhost:8080/api/InnerPhoto/${publicId}`, {
+      withCredentials: true, // same as `credentials: "include"` in fetch
+    });
+    console.log("Detele successful:", response.data);
+  } catch (error) {
+    console.error("Failed to delete photo:", error);
+    throw new Error("Failed to delete photo");
   }
 };

@@ -3,56 +3,28 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../context/authStore";
 import PhotoCard from "../components/PhotoCard";
 import { useQuery } from "@tanstack/react-query";
-import { fetchUserPhotos } from "../api/photoApi";
+import wrong from "/src/assets/wrong.svg";
+import { fetchUserPhotos,uploadInnerPhoto,deleteInnerPhoto } from "../api/photoApi";
 
 interface Photo {
   photoId: number;
+  publicId:string;
   imageData: string;
-  isLocked: boolean;
-}
-
-interface Profile {
-  id: string;
-  name: string;
   locked: boolean;
-  photos: Photo[];
 }
 
-const initialDummyProfiles: Record<string, Profile> = {
-  "1": {
-    id: "1",
-    name: "Alice",
-    locked: false,
-    photos: [],
-  },
-  "2": {
-    id: "2",
-    name: "Bob",
-    locked: true,
-    photos: [],
-  },
-};
+
 
 const PhotoDetails = () => {
-  const id = useRef(0);
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
 
-  const [profiles, setProfiles] = useState(initialDummyProfiles); // store all profiles
-  const [profile, setProfile] = useState<Profile | null>(null);
+
   const [loading, setLoading] = useState(false);
   const { photoId } = useParams<{ photoId: string }>();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    setProfile({
-    id: "6",
-    name: "Bob",
-    locked: true,
-    photos: [],
-  });
-  }, []);
   const { data: photoss, isLoading, error, refetch } = useQuery({
     queryKey: ["photoss", photoId],
     queryFn: () => fetchUserPhotos(photoId),
@@ -64,14 +36,14 @@ const PhotoDetails = () => {
       if (e.key === "ArrowLeft") {
         setFullscreenIndex((prev) => (prev! > 0 ? prev! - 1 : prev));
       } else if (e.key === "ArrowRight") {
-        setFullscreenIndex((prev) => (prev! < (profile?.photos.length ?? 0) - 1 ? prev! + 1 : prev));
+        setFullscreenIndex((prev) => (prev! < (photoss?.photos.length ?? 0) - 1 ? prev! + 1 : prev));
       } else if (e.key === "Escape") {
         setFullscreenIndex(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [fullscreenIndex, profile?.photos.length]);
+  }, [fullscreenIndex, photoss?.photos.length]);
 
   // useEffect(() => {
   //   setLoading(true);
@@ -99,82 +71,65 @@ const PhotoDetails = () => {
     fileInputRef.current?.click();
   };
 
-  const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !profile) return;
+    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const newPhoto: Photo = {
-        photoId:id.current += 1,
-        imageData: reader.result as string,
-        isLocked: false,
-      };
-
-      const updatedProfile = {
-        ...profile,
-        photos: [...profile.photos, newPhoto],
-      };
-
-      setProfile(updatedProfile);
-      setProfiles((prev) => ({
-        ...prev,
-        [profile.id]: updatedProfile,
-      }));
-    };
-
-    reader.readAsDataURL(file);
+    try {
+      console.log("Image before uploading from component!");
+      await uploadInnerPhoto(photoId!,file);
+      console.log("Image uploaded from component!");
+      refetch();
+    } catch (err) {
+      console.error("Upload failed in component:", err);
+    }
   };
 
-  const handleDelete = (photoId: number) => {
-    if (!profile) return;
-
-    const updatedProfile = {
-      ...profile,
-      photos: profile.photos.filter((p) => p.photoId !== photoId),
-    };
-
-    setProfile(updatedProfile);
-    setProfiles((prev) => ({
-      ...prev,
-      [profile.id]: updatedProfile,
-    }));
+  const handleDelete = async (photoId: string) => {
+    try {
+      await deleteInnerPhoto(photoId);
+      console.log("Image deleted:", photoId);
+      refetch();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   if (isLoading) return <p className="text-center">Loading profile...</p>;
   if (!photoss) return <p className="text-center text-red-500">Profile not found.</p>;
-  if (!profile) return <p className="text-center text-red-500">Profile not found.</p>;
+  if (error) return <p className="text-center text-red-500">Profile not found.</p>;
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{profile.name} Profile</h1>
+      <h1 className="text-2xl font-bold mb-4">{photoss.userName} Profile</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {(!photoss || photoss.photos)  ? (
+        {(!photoss || !photoss.photos)  ? (
           <p className="text-gray-500 col-span-full text-center">
             No photos uploaded yet.
           </p>
         ) : (
-          photoss[0].photos.map((photo : Photo) => (
-            <div key={photo.photoId}>
-              <div onClick={() => setFullscreenIndex(photo.photoId)}>
-              <PhotoCard
-        photo={{
-          id: photo.photoId,  // use photo.photoId
-          url: photo.imageData,  // use photo.imageData
-          isLocked: photo.isLocked,  // use photo.locked
-        }}
-      />
+          photoss.photos.map((photos: Photo, index: number) => (
+            <div key={photos.photoId} className="relative w-full">
+              <div onClick={() =>setFullscreenIndex(index)}>
+                <PhotoCard
+                  photo={{
+                    id: photos.photoId,  // use photo.photoId
+                    url: photos.imageData,  // use photo.imageData
+                    isLocked: photos.locked,  // use photo.locked
+                  }}
+                />
               </div>
 
-              {user?.id === profile.id && (
+              {/* {user?.id === photoss.id && ( */}
                 <button
-                  onClick={() => handleDelete(photo.photoId)}
-                  className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                  onClick={() => handleDelete(photos.publicId)}
+                  className="absolute top-2 right-2 p-1 rounded-full hover:bg-white shadow-lg"
+                  title="Delete"
                 >
-                  Delete
+                <img src={wrong} alt="Delete" className="w-4 h-4" />
                 </button>
-              )}
+              {/* )} */}
             </div>
           ))
         )}
@@ -194,7 +149,7 @@ const PhotoDetails = () => {
           className="hidden"
         />
       </div>
-      {fullscreenIndex !== null && profile.photos[fullscreenIndex] && (
+      {fullscreenIndex !== null && photoss.photos[fullscreenIndex] && (
   <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 flex items-center justify-center transition-all">
     {/* Close Button */}
     <button
@@ -216,13 +171,13 @@ const PhotoDetails = () => {
 
     {/* Image */}
     <img
-      src={profile.photos[fullscreenIndex].imageData}
+      src={photoss.photos[fullscreenIndex].imageData}
       alt="Fullscreen"
       className="max-h-[90vh] max-w-[90vw] rounded-xl shadow-2xl transition-transform duration-300 hover:scale-105 object-contain"
     />
 
     {/* Right Arrow */}
-    {fullscreenIndex < profile.photos.length - 1 && (
+    {fullscreenIndex < photoss.photos.length - 1 && (
       <button
         className="absolute right-4 md:right-8 text-white text-5xl px-3 py-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition"
         onClick={() => setFullscreenIndex(fullscreenIndex + 1)}
