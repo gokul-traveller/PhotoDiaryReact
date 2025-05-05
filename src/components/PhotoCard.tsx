@@ -3,13 +3,15 @@ import React from "react";
 
 interface PhotoCardProps {
   photo: {
-    id: string;
+    photoId: number;
     url: string;
     isLocked: boolean;
   };
+  onClick?: () => void;
 }
 
 const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
+  console.log("all the photoid from card" + photo.photoId);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,7 +19,8 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
 
   const handleClick = () => {
     if (!isPhotoDetailsPage) {
-      navigate(`/photo/${photo.id}`);
+      console.log("this is the photoid form photocard"  + photo.photoId)
+      navigate(`/photo/${photo.photoId}`);
     }
     // Otherwise, PhotoDetails will handle full-screen on click
   };

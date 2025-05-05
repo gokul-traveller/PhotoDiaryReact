@@ -2,16 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAllUsers } from "../api/photoApi";
 import SearchBar from "../components/SearchBar";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../context/authStore";
 
-interface User {
-  id: string;
-  userName: string;
-  imageData: string;
-  locked: boolean;
-}
+interface User{ userId: number; userName: string; imageData: string; email: string; lock: boolean }
 
 const Home = () => {
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
 
   const { data: users, isLoading, error } = useQuery({
     queryKey: ["users"],
@@ -30,16 +27,17 @@ const Home = () => {
      }}
 >
         {users?.map((user: User) => {
-          console.log(`User: ${user.userName}, isLocked: ${user.locked}`); // Log inside map()
+          console.log(`User: ${user.userName}, isLocked: ${user.lock}`); // Log inside map()
           return (
           <div 
-            key={user.id} 
+            key={user.userId} 
             className={`flex flex-col items-center text-center cursor-pointer ${
-              user.locked ? "opacity-70 cursor-not-allowed" : "hover:scale-105 transition-transform"
+              user.lock ? "opacity-70 cursor-not-allowed" : "hover:scale-105 transition-transform"
             }`}
             onClick={() => {
-              if (!user.locked) {
-                navigate(`/profile/${user.id}`);
+              if (!user.lock) {
+                login(user);
+                navigate(`/profile/${user.userId}`);
               }
             }}
           >
@@ -48,7 +46,7 @@ const Home = () => {
               alt="User" 
               className="w-48 h-48 rounded-full object-cover border-4 border-stone-300 shadow-md"
             />
-            <p className="mt-2 text-lg font-medium">{user.userName}{user.locked ? "(Locked😁😁)" : "(Unlocked)"}</p>
+            <p className="mt-2 text-lg font-medium">{user.userName}</p>
           </div>
         )})}
       </div>

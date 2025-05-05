@@ -2,12 +2,13 @@ import axios from 'axios';
 
 
 export interface Photo {
-  id: string;
+  photoId: string;
   imageData: string;
   locked: boolean;
   ownerId: string;
   innerPhotos: Photo[];
 }
+
 
 // Fetch a user's profile
 export const fetchUserProfile = async (userId: string | undefined) => {
@@ -80,7 +81,7 @@ export const fetchAllUsers = async () => {
   }
   console.log("data is about to be called");
   const data = await response.json(); 
-  // console.log("Data is " + JSON.stringify(data, null, 2));
+   console.log("Data is " + JSON.stringify(data, null, 2));
   return data;
 }
   catch (error) {
@@ -103,7 +104,7 @@ export const fetchUserCategories = async (photoId: number | undefined) => {
   }
   console.log("data is about to be called");
   const data = await response.json(); 
-  // console.log("Data is " + JSON.stringify(data, null, 2));
+  console.log("Data is " + JSON.stringify(data, null, 2));
   return data;
 }
   catch (error) {
@@ -113,9 +114,10 @@ export const fetchUserCategories = async (photoId: number | undefined) => {
 };
 
 // Upload a new photo
-export const uploadCategory = async(file: File): Promise<void> => {
+export const uploadCategory = async(file: File ,userId : string): Promise<void> => {
   const formData = new FormData();
-  formData.append("image", file); // 'image' should match your backend's expected field
+  formData.append("image", file ); // 'image' should match your backend's expected field
+  formData.append("userId", userId);
 
   try {
     const response = await axios.post("http://localhost:8080/api/upload", formData, {
@@ -193,5 +195,18 @@ export const deleteInnerPhoto = async (publicId: string) => {
   } catch (error) {
     console.error("Failed to delete photo:", error);
     throw new Error("Failed to delete photo");
+  }
+};
+
+// Update Category Text
+export const updateCategoryTitle = async (categoryId: number ,title : string) => {
+  try {
+    const response = await axios.put(`http://localhost:8080/api/photo/${categoryId}/${title}`, {
+      withCredentials: true, // same as `credentials: "include"` in fetch
+    });
+    console.log("Update successful:", response.data);
+  } catch (error) {
+    console.error("Failed to Update Category:", error);
+    throw new Error("Failed to Update Category");
   }
 };

@@ -23,7 +23,7 @@ const PhotoDetails = () => {
 
   const [loading, setLoading] = useState(false);
   const { photoId } = useParams<{ photoId: string }>();
-
+console.log("this is the photoid:"+photoId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: photoss, isLoading, error, refetch } = useQuery({
     queryKey: ["photoss", photoId],
@@ -32,18 +32,22 @@ const PhotoDetails = () => {
   });
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (fullscreenIndex === null) return;
+      if (fullscreenIndex === null || !photoss) return;
+  
       if (e.key === "ArrowLeft") {
         setFullscreenIndex((prev) => (prev! > 0 ? prev! - 1 : prev));
       } else if (e.key === "ArrowRight") {
-        setFullscreenIndex((prev) => (prev! < (photoss?.photos.length ?? 0) - 1 ? prev! + 1 : prev));
+        setFullscreenIndex((prev) =>
+          prev! < photoss.length - 1 ? prev! + 1 : prev
+        );
       } else if (e.key === "Escape") {
         setFullscreenIndex(null);
       }
     };
+  
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [fullscreenIndex, photoss?.photos.length]);
+  }, [fullscreenIndex, photoss]);
 
   // useEffect(() => {
   //   setLoading(true);
@@ -101,20 +105,22 @@ const PhotoDetails = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{photoss.userName} Profile</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {/* {photoss.userName} */}
+         Profile</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {(!photoss || !photoss.photos)  ? (
+        {(!photoss)  ? (
           <p className="text-gray-500 col-span-full text-center">
             No photos uploaded yet.
           </p>
         ) : (
-          photoss.photos.map((photos: Photo, index: number) => (
+          photoss.map((photos: Photo, index: number) => (
             <div key={photos.photoId} className="relative w-full">
               <div onClick={() =>setFullscreenIndex(index)}>
                 <PhotoCard
                   photo={{
-                    id: photos.photoId,  // use photo.photoId
+                    photoId: photos.photoId,  // use photo.photoId
                     url: photos.imageData,  // use photo.imageData
                     isLocked: photos.locked,  // use photo.locked
                   }}
@@ -149,7 +155,7 @@ const PhotoDetails = () => {
           className="hidden"
         />
       </div>
-      {fullscreenIndex !== null && photoss.photos[fullscreenIndex] && (
+      {fullscreenIndex !== null && photoss[fullscreenIndex] && (
   <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 flex items-center justify-center transition-all">
     {/* Close Button */}
     <button
@@ -171,13 +177,13 @@ const PhotoDetails = () => {
 
     {/* Image */}
     <img
-      src={photoss.photos[fullscreenIndex].imageData}
+      src={photoss[fullscreenIndex].imageData}
       alt="Fullscreen"
       className="max-h-[90vh] max-w-[90vw] rounded-xl shadow-2xl transition-transform duration-300 hover:scale-105 object-contain"
     />
 
     {/* Right Arrow */}
-    {fullscreenIndex < photoss.photos.length - 1 && (
+    {fullscreenIndex < photoss.length - 1 && (
       <button
         className="absolute right-4 md:right-8 text-white text-5xl px-3 py-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition"
         onClick={() => setFullscreenIndex(fullscreenIndex + 1)}
