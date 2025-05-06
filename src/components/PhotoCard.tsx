@@ -18,6 +18,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
   const isPhotoDetailsPage = location.pathname.includes("/photo/");
 
   const handleClick = () => {
+    console.log("this is the photoid form photocard"  + photo.photoId + isPhotoDetailsPage)
     if (!isPhotoDetailsPage) {
       console.log("this is the photoid form photocard"  + photo.photoId)
       navigate(`/photo/${photo.photoId}`);

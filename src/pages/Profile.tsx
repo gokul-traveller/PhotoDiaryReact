@@ -32,7 +32,7 @@ const Profile: React.FC = () => {
   });
 
   const triggerFileSelect = () => {
-    console.log("category info"+category[0].categoryId);
+   // console.log("category info"+category[0].categoryId);
     fileInputRef.current?.click();
   };
 
@@ -108,7 +108,7 @@ const Profile: React.FC = () => {
                   isLocked: photos.locked,
                 }}
               /> 
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center " style={{ pointerEvents: "none" }}>
 
               <span className="text-white px-4 py-1 rounded-lg text-5xl font-semibold" style={{
                 textShadow: `
