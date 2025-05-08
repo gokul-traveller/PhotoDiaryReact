@@ -23,7 +23,7 @@ const Navbar = () => {
           {user ? (
             <>
               <Link
-                to={`/profile/${user.id}`}
+                to={`/profile/${user.userId}`}
                 className="text-white hover:underline"
               >
                 My Profile

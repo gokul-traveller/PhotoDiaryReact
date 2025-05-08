@@ -210,3 +210,30 @@ export const updateCategoryTitle = async (categoryId: number ,title : string) =>
     throw new Error("Failed to Update Category");
   }
 };
+
+// Update Category Lock
+export const updateCategoryLock = async (categoryId: number ,lock : boolean) => {
+  try {
+    const response = await axios.put(`http://localhost:8080/api/photo/lock/${categoryId}/${lock}`, {
+      withCredentials: true, // same as `credentials: "include"` in fetch
+    });
+    console.log("Update successful:", response.data);
+  } catch (error) {
+    console.error("Failed to Update Category:", error);
+    throw new Error("Failed to Update Category");
+  }
+};
+
+// Fetch a user's profile
+export const fetchUserById = async (userId: number) => {
+  console.log("user fetch method called")
+  if (!userId) throw new Error("User ID is required");
+
+  const response = await fetch(`http://localhost:8080/api/user/${userId}`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch user profile");
+
+  return response.json();
+};

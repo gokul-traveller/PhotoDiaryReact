@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import React from "react";
+import lock from "/src/assets/lock.svg";
 
 interface PhotoCardProps {
   photo: {
@@ -19,7 +20,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
 
   const handleClick = () => {
     console.log("this is the photoid form photocard"  + photo.photoId + isPhotoDetailsPage)
-    if (!isPhotoDetailsPage) {
+    if (!isPhotoDetailsPage && !photo.isLocked) {
       console.log("this is the photoid form photocard"  + photo.photoId)
       navigate(`/photo/${photo.photoId}`);
     }
@@ -40,7 +41,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
       />
       {photo.isLocked && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <span className="text-white font-bold">🔒 Locked</span>
+          <div className="absolute top-2 right-2 p-1 rounded-full bg-red-500 shadow-lg">
+            <img src={lock} alt="Delete" className="w-4 h-4" />
+          </div>  
         </div>
       )}
     </div>
