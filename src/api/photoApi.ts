@@ -237,3 +237,17 @@ export const fetchUserById = async (userId: number) => {
 
   return response.json();
 };
+
+// Fetch a user's profile
+export const fetchCategoryById = async (categoryId: number) => {
+  console.log("user fetch method called")
+  if (!categoryId) throw new Error("User ID is required");
+
+  const response = await fetch(`http://localhost:8080/api/category/${categoryId}`, {
+    credentials: "include",
+  });
+  console.log(response.json);
+  if (!response.ok) throw new Error("Failed to fetch user profile");
+
+  return response.json();
+};

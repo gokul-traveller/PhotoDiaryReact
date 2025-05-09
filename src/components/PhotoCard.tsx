@@ -35,7 +35,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
       <img
         src={photo.url}
         alt="User Photo"
-        className={`w-full h-64 object-cover ${
+        className={`w-full h-52 object-cover ${
           photo.isLocked ? "opacity-50 blur-sm" : ""
         }`}
       />

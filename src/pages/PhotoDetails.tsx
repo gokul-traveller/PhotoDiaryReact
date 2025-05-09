@@ -4,36 +4,53 @@ import { useAuthStore } from "../context/authStore";
 import PhotoCard from "../components/PhotoCard";
 import { useQuery } from "@tanstack/react-query";
 import wrong from "/src/assets/wrong.svg";
-import { fetchUserPhotos,uploadInnerPhoto,deleteInnerPhoto } from "../api/photoApi";
+import pencil from "/src/assets/pencil.svg";
+import {
+  fetchUserPhotos,
+  uploadInnerPhoto,
+  deleteInnerPhoto,
+  fetchCategoryById,
+} from "../api/photoApi";
 
 interface Photo {
   photoId: number;
-  publicId:string;
+  publicId: string;
   imageData: string;
   locked: boolean;
 }
 
-
-
 const PhotoDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [editEnable, setEditEnable] = useState<boolean>(false);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
-
-
-  const [loading, setLoading] = useState(false);
   const { photoId } = useParams<{ photoId: string }>();
-console.log("this is the photoid:"+photoId);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { data: photoss, isLoading, error, refetch } = useQuery({
+
+  const {
+    data: photoss,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["photoss", photoId],
     queryFn: () => fetchUserPhotos(photoId),
     enabled: !!photoId,
   });
+
+  const {
+    data: category,
+    isLoading: categoryLoading,
+    error: categoryError,
+  } = useQuery({
+    queryKey: ["category", photoId],
+    queryFn: () => fetchCategoryById(Number(photoId)),
+    enabled: !!photoId,
+  });
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (fullscreenIndex === null || !photoss) return;
-  
       if (e.key === "ArrowLeft") {
         setFullscreenIndex((prev) => (prev! > 0 ? prev! - 1 : prev));
       } else if (e.key === "ArrowRight") {
@@ -44,32 +61,10 @@ console.log("this is the photoid:"+photoId);
         setFullscreenIndex(null);
       }
     };
-  
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [fullscreenIndex, photoss]);
-
-  // useEffect(() => {
-  //   setLoading(true);
-
-  //   setTimeout(() => {
-  //     // const foundProfile = profiles[userId ?? ""];
-
-  //     // if (!foundProfile) {
-  //     //   setProfile(null);
-  //       setLoading(false);
-  //     //   return;
-  //     // }
-
-  //     if (foundProfile.locked && user?.id !== userId) {
-  //       navigate("/");
-  //       return;
-  //     }
-
-  //     setProfile(foundProfile);
-  //     setLoading(false);
-  //   }, 300);
-  // }, [userId, user, profiles, navigate]);
 
   const triggerFileSelect = () => {
     fileInputRef.current?.click();
@@ -80,19 +75,16 @@ console.log("this is the photoid:"+photoId);
     if (!file) return;
 
     try {
-      console.log("Image before uploading from component!");
-      await uploadInnerPhoto(photoId!,file);
-      console.log("Image uploaded from component!");
+      await uploadInnerPhoto(photoId!, file);
       refetch();
     } catch (err) {
       console.error("Upload failed in component:", err);
     }
   };
 
-  const handleDelete = async (photoId: string) => {
+  const handleDelete = async (photoPublicId: string) => {
     try {
-      await deleteInnerPhoto(photoId);
-      console.log("Image deleted:", photoId);
+      await deleteInnerPhoto(photoPublicId);
       refetch();
     } catch (err) {
       console.error("Delete failed:", err);
@@ -101,45 +93,57 @@ console.log("this is the photoid:"+photoId);
 
   if (isLoading) return <p className="text-center">Loading profile...</p>;
   if (!photoss) return <p className="text-center text-red-500">Profile not found.</p>;
-  if (error) return <p className="text-center text-red-500">Profile not found.</p>;
+  if (error) return <p className="text-center text-red-500">Error loading photos.</p>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        {/* {photoss.userName} */}
-         Profile</h1>
+    <div className="container mx-auto px-2">
+      <div className="relative flex items-center w-full h-10">
+        <div className="flex-1 text-left text-2xl font-bold">
+          {category?.userName}
+        </div>
+        <div className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold">
+          {category?.categoryName}
+        </div>
+        <div className="flex-1 text-right">
+          <button
+            onClick={() => setEditEnable((prev) => !prev)}
+            className="p-1 rounded-full bg-white hover:bg-gray-500 shadow-lg"
+            title="Edit"
+          >
+            <img src={pencil} alt="Edit" className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {(!photoss)  ? (
+        {photoss.length === 0 ? (
           <p className="text-gray-500 col-span-full text-center">
             No photos uploaded yet.
           </p>
         ) : (
           photoss.map((photos: Photo, index: number) => (
             <div key={photos.photoId} className="relative w-full">
-              <div onClick={() =>setFullscreenIndex(index)}>
+              <div onClick={() => setFullscreenIndex(index)}>
                 <PhotoCard
                   photo={{
-                    photoId: photos.photoId,  // use photo.photoId
-                    url: photos.imageData,  // use photo.imageData
-                    isLocked: photos.locked,  // use photo.locked
+                    photoId: photos.photoId,
+                    url: photos.imageData,
+                    isLocked: photos.locked,
                   }}
                 />
               </div>
-
-              {/* {user?.id === photoss.id && ( */}
-                <button
-                  onClick={() => handleDelete(photos.publicId)}
-                  className="absolute top-2 right-2 p-1 rounded-full hover:bg-white shadow-lg"
-                  title="Delete"
-                >
+              <button
+                onClick={() => handleDelete(photos.publicId)}
+                className="absolute top-2 right-2 p-1 rounded-full hover:bg-white shadow-lg"
+                title="Delete"
+              >
                 <img src={wrong} alt="Delete" className="w-4 h-4" />
-                </button>
-              {/* )} */}
+              </button>
             </div>
           ))
         )}
       </div>
+
       <div className="flex justify-center">
         <button
           onClick={triggerFileSelect}
@@ -155,45 +159,41 @@ console.log("this is the photoid:"+photoId);
           className="hidden"
         />
       </div>
+
       {fullscreenIndex !== null && photoss[fullscreenIndex] && (
-  <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 flex items-center justify-center transition-all">
-    {/* Close Button */}
-    <button
-      onClick={() => setFullscreenIndex(null)}
-      className="absolute top-6 right-6 text-white text-4xl hover:scale-110 transition-transform"
-    >
-      &times;
-    </button>
+        <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 flex items-center justify-center transition-all">
+          <button
+            onClick={() => setFullscreenIndex(null)}
+            className="absolute top-6 right-6 text-white text-4xl hover:scale-110 transition-transform"
+          >
+            &times;
+          </button>
 
-    {/* Left Arrow */}
-    {fullscreenIndex > 0 && (
-      <button
-        className="absolute left-4 md:left-8 text-white text-5xl px-3 py-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition"
-        onClick={() => setFullscreenIndex(fullscreenIndex - 1)}
-      >
-        &#8592;
-      </button>
-    )}
+          {fullscreenIndex > 0 && (
+            <button
+              className="absolute left-4 md:left-8 text-white text-5xl px-3 py-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition"
+              onClick={() => setFullscreenIndex(fullscreenIndex - 1)}
+            >
+              &#8592;
+            </button>
+          )}
 
-    {/* Image */}
-    <img
-      src={photoss[fullscreenIndex].imageData}
-      alt="Fullscreen"
-      className="max-h-[90vh] max-w-[90vw] rounded-xl shadow-2xl transition-transform duration-300 hover:scale-105 object-contain"
-    />
+          <img
+            src={photoss[fullscreenIndex].imageData}
+            alt="Fullscreen"
+            className="max-h-[90vh] max-w-[90vw] rounded-xl shadow-2xl transition-transform duration-300 hover:scale-105 object-contain"
+          />
 
-    {/* Right Arrow */}
-    {fullscreenIndex < photoss.length - 1 && (
-      <button
-        className="absolute right-4 md:right-8 text-white text-5xl px-3 py-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition"
-        onClick={() => setFullscreenIndex(fullscreenIndex + 1)}
-      >
-        &#8594;
-      </button>
-    )}
-  </div>
-)}
-
+          {fullscreenIndex < photoss.length - 1 && (
+            <button
+              className="absolute right-4 md:right-8 text-white text-5xl px-3 py-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition"
+              onClick={() => setFullscreenIndex(fullscreenIndex + 1)}
+            >
+              &#8594;
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

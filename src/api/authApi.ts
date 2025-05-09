@@ -11,11 +11,23 @@ const api = axios.create({
 });
 
 // Function to log in the user and retrieve a JWT token
-export const login = async (email: string, password: string) => {
-  const response = await api.post("/login", { email, password });
-  if (response.data.token) {
-    localStorage.setItem("authToken", response.data.token);
-  }
+export const googleLogin = async () => {
+  console.log("google login called");
+  const response = await api.get("http://localhost:8080/api/auth/googleLogin");
+  // if (response.data.token) {
+  //   localStorage.setItem("authToken", response.data.token);
+  // }
+  console.log(response.data);
+  return response.data;
+};
+
+export const guestLogin = async () => {
+  console.log("guest login called");
+  const response = await api.get("http://localhost:8080/api/auth/guestLogin");
+  // if (response.data.token) {
+  //   localStorage.setItem("authToken", response.data.token);
+  // }
+  console.log(response.data);
   return response.data;
 };
 

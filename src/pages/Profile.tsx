@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import pencil from "/src/assets/pencil.svg";
 import { useAuthStore } from "../context/authStore";
 import EditablePhotoCard from "./EditablePhotoCard";
 import {
@@ -55,43 +56,45 @@ const Profile: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || userLoading) {
     return <p className="text-center text-gray-600">Loading photos...</p>;
   }
 
-  if (error) {
+  if (error || userError) {
     return <p className="text-center text-red-500">Error loading photos.</p>;
   }
 
   return (
     <div>
-      {/* Top Bar */}
-      <div className="flex justify-between items-center w-full px-2 py-1">
-        <h1 className=" text-2xl font-bold mt-1">
-          {user?.userName}
-         </h1>
+      <div className="relative flex items-center w-full px-2 py-1">
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <h1 className="text-2xl font-bold">{user?.userName}</h1>
+        </div>
+        <div className="ml-auto">
         <button
           onClick={() => setEditEnable((prev) => !prev)}
-          className="px-6 py-1 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700"
+          className=" top-2 left-2 p-1 rounded-full bg-white hover:bg-gray-500 shadow-lg"
+          title="Edit"
         >
-          Edit
+          <img src={pencil} alt="Edit" className="w-4 h-4" />
         </button>
+        </div>
       </div>
 
       {/* Photo List */}
-      <div className="flex flex-col gap-2 w-full py-2">
-        {category?.length === 0 ? (
-          <p className="text-center text-gray-500">No photos uploaded yet.</p>
-        ) : (
-          category.map((photo: Photo) => (
-            <EditablePhotoCard
-              key={photo.categoryId}
-              photo={photo}
-              editEnable={editEnable}
-              refetch={refetch}
-            />
-          ))
-        )}
+      <div className="flex flex-col gap-2 w-full pb-2">
+      {Array.isArray(category) && category.length > 0 ? (
+        category.map((photo: Photo) => (
+          <EditablePhotoCard
+            key={photo.categoryId}
+            photo={photo}
+            editEnable={editEnable}
+            refetch={refetch}
+          />
+        ))
+      ) : (
+        <p className="text-center text-gray-500">No photos uploaded yet.</p>
+      )}
       </div>
 
       {/* Add Photo Button */}
