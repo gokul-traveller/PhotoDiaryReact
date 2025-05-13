@@ -1,13 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link ,useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../context/authStore";
 import "./NavStyle.css";
 import Logo from "./Logo";
 
 const Navbar = () => {
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login"); // ✅ redirect after logout
+  };
   return (
-<nav className="fixed top-0 w-full bg-gray-500 shadow-md select-none z-50 h-12 md:h-12">
+    <nav className="fixed top-0 w-full bg-gray-500 shadow-md select-none z-50 h-12 md:h-12">
       <div className="flex justify-between items-center w-full px-4">
         <Link to="/" className="text-1xl md:text-2xl font-georgia text-white flex items-center ml-3">
           <Logo />
@@ -29,7 +34,7 @@ const Navbar = () => {
                 My Profile
               </Link>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600"
               >
                 Logout

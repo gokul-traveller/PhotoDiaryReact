@@ -13,12 +13,13 @@ const api = axios.create({
 // Function to log in the user and retrieve a JWT token
 export const googleLogin = async () => {
   console.log("google login called");
-  const response = await api.get("http://localhost:8080/api/auth/googleLogin");
+  window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  // const response = await api.get("http://localhost:8080/oauth2/authorization/google");
   // if (response.data.token) {
   //   localStorage.setItem("authToken", response.data.token);
   // }
-  console.log(response.data);
-  return response.data;
+  // console.log(response.data);
+  // return response.data;
 };
 
 export const guestLogin = async () => {
@@ -36,13 +37,14 @@ export const logout = () => {
   localStorage.removeItem("authToken");
 };
 
-// Function to get the current user's details
-export const getCurrentUser = async () => {
-  const token = localStorage.getItem("authToken");
-  if (!token) throw new Error("No authentication token found");
 
-  const response = await api.get("/me", {
-    headers: { Authorization: `Bearer ${token}` },
+export const getCurrentUser = async (token: string) => {
+  const res = await fetch("http://localhost:8080/api/user/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return response.data;
+  const data = await res.json()
+  console.log(data);
+  return data;
 };

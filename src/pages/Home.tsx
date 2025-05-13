@@ -8,7 +8,7 @@ interface User{ userId: number; userName: string; imageData: string; email: stri
 
 const Home = () => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
+  const authStore = useAuthStore.getState();
 
   const { data: users, isLoading, error } = useQuery({
     queryKey: ["users"],
@@ -36,7 +36,6 @@ const Home = () => {
             }`}
             onClick={() => {
               if (!user.lock) {
-                login(user);
                 navigate(`/profile/${user.userId}`);
               }
             }}

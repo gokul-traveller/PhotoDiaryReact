@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
   const [editEnable, setEditEnable] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { userId } = useParams<{ userId: string}>();
-  const logeduser = useAuthStore((state) => state.user);
+  const logedUser = useAuthStore((state) => state.user);
   const parsedUserId = userId ?? "0";
 
   const { data: category, isLoading, error, refetch } = useQuery({

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from "../context/authStore";
 
 
 export interface Photo {
@@ -67,28 +68,40 @@ export const fetchPublicPhotos = async () => {
   return response.json();
 };
 
-
 export const fetchAllUsers = async () => {
   try {
-  const response = await fetch("http://localhost:8080/api/photos", {
-    method: "GET",
-    credentials: "include",
-  });
-  console.log("data is not called");
-  if (!response.ok) {
-    console.log("error loading photos");
-    throw new Error("Failed to fetch photos");
-  }
-  console.log("data is about to be called");
-  const data = await response.json(); 
-   console.log("Data is " + JSON.stringify(data, null, 2));
-  return data;
-}
-  catch (error) {
+    // Get userId from Zustand store or localStorage
+    const authStore = useAuthStore.getState(); // Zustand store access outside components
+    const userId = authStore.user?.userId || null;
+    console.log(userId);
+    console.log(userId
+      ? `http://localhost:8080/api/photos?userId=${userId}`
+      : `http://localhost:8080/api/photos`);
+
+    // Construct the URL based on whether user is logged in
+    const url = userId
+      ? `http://localhost:8080/api/photos?userId=${userId}`
+      : `http://localhost:8080/api/photos`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      console.log("error loading photos");
+      throw new Error("Failed to fetch photos");
+    }
+
+    const data = await response.json();
+    console.log("Fetched user data:", data);
+    return data;
+  } catch (error) {
     console.log("error loading photos");
     throw new Error("Failed to fetch photos");
   }
 };
+
 
 // Fetch photo details
 export const fetchUserCategories = async (photoId: number | undefined) => {
