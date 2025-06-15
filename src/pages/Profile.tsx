@@ -1,16 +1,15 @@
-import React, { useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import pencil from "/src/assets/pencil.svg";
 import { useAuthStore } from "../context/authStore";
 import EditablePhotoCard from "./EditablePhotoCard";
+import LoadingPopup from "./LoadingPopup";
 import {
   fetchUserCategories,
   uploadCategory,
   fetchUserById
 } from "../api/photoApi";
-
-interface User{ userId: number; userName: string; imageData: string; email: string; lock: boolean }
 
 interface Photo {
   categoryId: number;
@@ -21,11 +20,20 @@ interface Photo {
 }
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const [editEnable, setEditEnable] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { userId } = useParams<{ userId: string}>();
   const logedUser = useAuthStore((state) => state.user);
+  const [uploading, setUploading] = useState(false);
   const parsedUserId = userId ?? "0";
+
+  useEffect(() => {
+    console.log("logged user from home page is : "  + logedUser ?.userId + "and current user is : " + parsedUserId)
+    if (logedUser===null) {
+      navigate(`/login`);
+    }
+  }, []);
 
   const { data: category, isLoading, error, refetch } = useQuery({
     queryKey: ["category", parsedUserId],
@@ -48,13 +56,17 @@ const Profile: React.FC = () => {
     if (!file) return;
 
     try {
+      setUploading(true);
       await uploadCategory(file, parsedUserId);
-      console.log("Image uploaded successfully!");
       refetch();
     } catch (err) {
       console.error("Upload failed:", err);
+    } finally {
+      setUploading(false);
     }
   };
+
+  const isAppLoading = isLoading || userLoading || uploading;
 
   if (isLoading || userLoading) {
     return <p className="text-center text-gray-600">Loading photos...</p>;
@@ -66,20 +78,24 @@ const Profile: React.FC = () => {
 
   return (
     <div>
-      <div className="relative flex items-center w-full px-2 py-1">
-        <div className="absolute left-1/2 transform -translate-x-1/2">
-          <h1 className="text-2xl font-bold">{user?.userName}</h1>
-        </div>
-        <div className="ml-auto">
-        <button
-          onClick={() => setEditEnable((prev) => !prev)}
-          className=" top-2 left-2 p-1 rounded-full bg-white hover:bg-gray-500 shadow-lg"
-          title="Edit"
-        >
-          <img src={pencil} alt="Edit" className="w-4 h-4" />
-        </button>
-        </div>
-      </div>
+      {isAppLoading && <LoadingPopup />}
+<div className="relative flex w-full px-2 py-2">
+  <div>
+    <h1 className="text-2xl font-bold ml-2">{user?.userName}</h1>
+  </div>
+  {logedUser?.userId === Number(parsedUserId) ? (
+    <button
+      onClick={() => setEditEnable((prev) => !prev)}
+      className="rounded-full bg-white hover:bg-gray-500 shadow-lg w-8 h-8 flex items-center justify-center ml-auto mr-2"
+      title="Edit"
+    >
+      <img src={pencil} alt="Edit" className="w-4 h-4" />
+    </button>
+  ) : (
+    <div className="w-8 h-8" />
+  )}
+</div>
+
 
       {/* Photo List */}
       <div className="flex flex-col gap-2 w-full pb-2">
@@ -97,7 +113,7 @@ const Profile: React.FC = () => {
       )}
       </div>
 
-      {/* Add Photo Button */}
+      {logedUser?.userId === Number(parsedUserId) && (
       <div className="mt-2 w-full flex justify-center">
         <button
           onClick={triggerFileSelect}
@@ -112,6 +128,7 @@ const Profile: React.FC = () => {
           className="hidden"
         />
       </div>
+      )}
     </div>
   );
 };

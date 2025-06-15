@@ -186,11 +186,16 @@ export const uploadInnerPhoto = async(photoId: string,file: File): Promise<void>
   formData.append("image", file); // 'image' should match your backend's expected field
 
   try {
-    const response = await axios.post(`http://localhost:8080/api/${photoId}/uploadInnerPhoto`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axios.post(
+      `http://localhost:8080/api/${photoId}/uploadInnerPhoto`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true, // ✅ include cookies/session
+      }
+    );
     console.log("Upload successful:", response.data);
   } catch (error) {
     console.error("Error uploading image:", error);
@@ -237,6 +242,31 @@ export const updateCategoryLock = async (categoryId: number ,lock : boolean) => 
   }
 };
 
+
+export const updatePhotoLock = async (PhotoId: number ,lock : boolean) => {
+  try {
+    const response = await axios.put(`http://localhost:8080/api/Innerphoto/lock/${PhotoId}/${lock}`, {
+      withCredentials: true, // same as `credentials: "include"` in fetch
+    });
+    console.log("Update successful:", response.data);
+  } catch (error) {
+    console.error("Failed to Update Category:", error);
+    throw new Error("Failed to Update Category");
+  }
+};
+
+export const updateUserLock = async (userId: number ,lock : boolean) => {
+  try {
+    const response = await axios.put(`http://localhost:8080/api/user/lock/${userId}/${lock}`, {
+      withCredentials: true, // same as `credentials: "include"` in fetch
+    });
+    console.log("Update successful:", response.data);
+  } catch (error) {
+    console.error("Failed to Update Category:", error);
+    throw new Error("Failed to Update Category");
+  }
+};
+
 // Fetch a user's profile
 export const fetchUserById = async (userId: number) => {
   console.log("user fetch method called")
@@ -257,6 +287,20 @@ export const fetchCategoryById = async (categoryId: number) => {
   if (!categoryId) throw new Error("User ID is required");
 
   const response = await fetch(`http://localhost:8080/api/category/${categoryId}`, {
+    credentials: "include",
+  });
+  console.log(response.json);
+  if (!response.ok) throw new Error("Failed to fetch user profile");
+
+  return response.json();
+};
+
+// Fetch a user's profile
+export const fetchCategoryUser = async (categoryId: number) => {
+  console.log("user fetch method called")
+  if (!categoryId) throw new Error("User ID is required");
+
+  const response = await fetch(`http://localhost:8080/api/photo/${categoryId}/user`, {
     credentials: "include",
   });
   console.log(response.json);

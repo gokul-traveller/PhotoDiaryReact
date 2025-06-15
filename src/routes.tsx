@@ -15,6 +15,7 @@ const AppRoutes = () => {
       <Route path="/login/success" element={<LoginSuccess />} />
       <Route path="/profile/:userId" element={<Profile />} />
       <Route path="/photo/:photoId" element={<PhotoDetails />} />
+
       
       {/* Protected Routes (Only accessible when logged in) */}
       <Route element={<ProtectedRoute />}>

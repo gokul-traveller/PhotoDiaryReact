@@ -7,6 +7,14 @@ const Navbar = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
+  const handleProfileClick = () => {
+    if (user?.userId === 0) {
+      navigate("/"); // Redirect to home
+    } else {
+      navigate(`/profile/${user?.userId}`);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login"); // ✅ redirect after logout
@@ -27,12 +35,12 @@ const Navbar = () => {
           </Link>
           {user ? (
             <>
-              <Link
-                to={`/profile/${user.userId}`}
+              <button
+                onClick={handleProfileClick}
                 className="text-white hover:underline"
               >
                 My Profile
-              </Link>
+              </button>
               <button
                 onClick={handleLogout}
                 className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600"

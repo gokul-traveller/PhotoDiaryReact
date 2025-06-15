@@ -5,6 +5,7 @@ import save from "/src/assets/save.svg";
 import lock from "/src/assets/lock.svg";
 import unlock from "/src/assets/unlock.svg";
 import PhotoCard from "../components/PhotoCard";
+import LoadingPopup from "./LoadingPopup"; 
 import { updateCategoryTitle, updateCategoryLock, deletePhoto } from "../api/photoApi";
 
 interface EditablePhotoCardProps {
@@ -27,39 +28,62 @@ const EditablePhotoCard: React.FC<EditablePhotoCardProps> = ({
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(photo.name);
   const [locked, setLocked] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 
   const handleSave = async () => {
+    setLoading(true);
     try {
-      await updateCategoryTitle(photo.categoryId, title);
+      await Promise.all([
+        updateCategoryTitle(photo.categoryId, title),
+        sleep(1000)
+      ]);
       setEditing(false);
       refetch();
     } catch (err) {
       console.error("Failed to update title", err);
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   const handleLockToggle = async () => {
+    setLoading(true);
     try {
-      await updateCategoryLock(photo.categoryId, !locked);
+      await Promise.all([
+        updateCategoryLock(photo.categoryId, !locked),
+        sleep(1000)
+      ]);
       setLocked(!locked);
       refetch();
     } catch (err) {
       console.error("Failed to toggle lock", err);
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   const handleDelete = async () => {
+    setLoading(true);
     try {
-      await deletePhoto(photo.publicId);
+      await Promise.all([
+        deletePhoto(photo.publicId),
+        sleep(1000)
+      ]);
       refetch();
     } catch (err) {
       console.error("Failed to delete photo", err);
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   return (
 <div className="relative w-full">
-  {/* Background PhotoCard (clickable) */}
+  {loading && <LoadingPopup />} 
   <PhotoCard
     photo={{
       photoId: photo.categoryId,
