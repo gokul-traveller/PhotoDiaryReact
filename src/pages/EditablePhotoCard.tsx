@@ -133,14 +133,14 @@ const EditablePhotoCard: React.FC<EditablePhotoCardProps> = ({
         <>
           <button
             onClick={() => setEditing(false)}
-            className="absolute top-2 left-2 p-1 rounded-full bg-black hover:bg-gray-500 shadow-lg"
+            className="absolute top-10 left-10 p-1 rounded-full bg-black hover:bg-gray-500 shadow-lg"
             title="Cancel"
           >
             <img src={wrong} alt="Cancel" className="w-4 h-4" />
           </button>
           <button
             onClick={handleSave}
-            className="absolute top-2 left-10 p-1 rounded-full bg-green-600 hover:bg-white shadow-lg"
+            className="absolute top-10 left-2 p-1 rounded-full bg-green-600 hover:bg-white shadow-lg"
             title="Save"
           >
             <img src={save} alt="Save" className="w-4 h-4" />
@@ -149,7 +149,7 @@ const EditablePhotoCard: React.FC<EditablePhotoCardProps> = ({
       ) : (
         <button
           onClick={() => setEditing(true)}
-          className="absolute top-2 left-2 p-1 rounded-full bg-white hover:bg-gray-500 shadow-lg"
+          className="absolute top-10 left-2 p-1 rounded-full bg-white hover:bg-gray-500 shadow-lg"
           title="Edit"
         >
           <img src={pencil} alt="Edit" className="w-4 h-4" />
@@ -166,7 +166,7 @@ const EditablePhotoCard: React.FC<EditablePhotoCardProps> = ({
       </button>
       <button
         onClick={handleLockToggle}
-        className={`absolute top-2 right-10 p-1 rounded-full shadow-lg ${
+        className={`absolute top-2 left-2 p-1 rounded-full shadow-lg ${
           locked ? "bg-white hover:bg-green-600" : "bg-white hover:bg-red-600"
         }`}
         title={locked ? "Unlock" : "Lock"}

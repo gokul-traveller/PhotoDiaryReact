@@ -37,7 +37,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo }) => {
       />
       {photo.isLocked && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="absolute top-2 right-2 p-1 rounded-full bg-red-500 shadow-lg">
+          <div className="absolute top-2 left-2 p-1 rounded-full bg-red-500 shadow-lg">
             <img src={lock} alt="Locked" className="w-4 h-4" />
           </div>
         </div>

@@ -192,19 +192,18 @@ const PhotoDetails = () => {
             >
               <img src={wrong} alt="Delete" className="w-4 h-4" />
             </button>
-                  <button
-                  onClick={() => handleLockToggle(photos.photoId, !photos.locked)}
-                  className={`absolute top-2 left-2 p-1 rounded-full shadow-lg ${
-                    photos.locked ? "bg-white hover:bg-green-600" : "bg-white hover:bg-red-600"
-                  }`}
-                  title={photos.locked ? "Unlock" : "Lock"}
-                >
-                  <img
-                    src={photos.locked ? unlock : lock}
-                    alt={photos.locked ? "Unlock" : "Lock"}
-                    className="w-4 h-4"
-                  />
-                </button>
+        <button
+          onClick={() => handleLockToggle(photos.photoId, !photos.locked)}
+          className="absolute top-2 left-2 p-1 rounded-full shadow-lg bg-white hover:bg-gray-200 z-10"
+          title={photos.locked ? "Unlock" : "Lock"}
+        >
+          <img
+            src={photos.locked ? unlock : lock}
+            alt={photos.locked ? "Unlock" : "Lock"}
+            className="w-4 h-4"
+          />
+        </button>
+
                 </div>
           )}
         </div>
